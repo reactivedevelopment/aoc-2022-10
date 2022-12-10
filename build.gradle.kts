@@ -7,7 +7,7 @@ plugins {
   id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 dependencies {
-
+  implementation("com.google.guava:guava:31.1-jre")
 }
 tasks.jar {
   isZip64 = true

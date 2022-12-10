@@ -1,25 +1,52 @@
 package com.adventofcode
 
-import com.adventofcode.Processor.signalsSum
+import com.adventofcode.CPU.process
+import com.adventofcode.CRT.display
+import com.adventofcode.CRT.drawPixel
+import com.adventofcode.CRT.sprite
+import com.google.common.collect.Iterators.cycle
 
+object CRT {
+  private val display = CharArray(240) { '?' }
+  private val realPixel = display.indices.iterator()
+  private val spritePixel = cycle(0 until 40)
+  var sprite = 1
 
-object Processor {
-  private var cycleCounter = 0L
-  private var xRegister = 1L
-  private var signalCycles = setOf(20L, 60L, 100L, 140L, 180L, 220L)
-  var signalsSum = 0L; private set
+  private fun isVisible(): Boolean {
+    val p = spritePixel.next()
+    return p in setOf(sprite - 1, sprite, sprite + 1)
+  }
 
-  private fun cycle() {
-    cycleCounter += 1
-    if(cycleCounter in signalCycles) {
-      signalsSum += (cycleCounter * xRegister)
+  fun drawPixel() {
+    val p = realPixel.next()
+    if (isVisible()) {
+      display[p] = '#'
+    } else {
+      display[p] = '.'
     }
   }
 
-  private fun addX(v: Long) {
+  fun display() {
+    val lines = display.asList().chunked(40)
+    for (line in lines) {
+      val processedLine = line.joinToString("")
+      println(processedLine)
+    }
+  }
+}
+
+object CPU {
+  private var xRegister = 1
+
+  private fun cycle() {
+    drawPixel()
+  }
+
+  private fun addX(v: Int) {
     cycle()
     cycle()
     xRegister += v
+    sprite = xRegister
   }
 
   private fun noop() {
@@ -27,11 +54,11 @@ object Processor {
   }
 
   fun process(command: String) {
-    if(command == "noop") {
+    if (command == "noop") {
       noop()
       return
     }
-    val value = command.removePrefix("addx ").toLong()
+    val value = command.removePrefix("addx ").toInt()
     addX(value)
   }
 }
@@ -40,6 +67,6 @@ fun main() {
   ::main.javaClass
     .getResourceAsStream("/input")!!
     .bufferedReader()
-    .forEachLine(Processor::process)
-  println(signalsSum)
+    .forEachLine(::process)
+  display()
 }
